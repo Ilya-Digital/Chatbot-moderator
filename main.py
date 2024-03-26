@@ -6,7 +6,6 @@ from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from app.handlers.for_admin import admin
 from app.handlers.for_user import user
-# from app.database.models import async_main
 
 
 async def main():

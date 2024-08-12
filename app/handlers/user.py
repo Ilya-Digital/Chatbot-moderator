@@ -15,6 +15,8 @@ import pymorphy3
 
 
 import app.keyboards as kb
+from config import ADMIN_ID
+from app.factory import DelMsg, DelAndBan
 
 
 user = Router()
@@ -32,28 +34,27 @@ async def report(message: Message, bot: Bot, command: CommandObject) -> Any:
         time = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
         print(time)
         await bot.forward_message(
-            chat_id=123, from_chat_id=message.chat.id,
+            chat_id=ADMIN_ID, from_chat_id=message.chat.id,
             message_id=message.reply_to_message.message_id
         )
         print(reply.chat.id)
-        await bot.send_message(chat_id=123, text=f'👆 Дата: {time}\n\nUser_id: {reply.from_user.id}\n\nЗапись: {command.args}', reply_markup=kb.report_kb(reply.message_id, reply.from_user.id, reply.chat.id))
+        await bot.send_message(chat_id=ADMIN_ID, text=f'👆 Дата: {time}\n\nUser_id: {reply.from_user.id}\n\nЗапись: {command.args}', reply_markup=kb.report_kb(reply.message_id, reply.from_user.id, reply.chat.id))
 
 
-@user.callback_query(F.data.startswith('delete_msg'))
-async def delete_msg(callback: CallbackQuery, bot: Bot) -> None:
-    # print(callback.data.split('|'))
-    message_id = callback.data.split('|')[1]
-    chat_id = callback.data.split('|')[2]
-    await bot.delete_message(int(chat_id), int(message_id))
+@user.callback_query(DelMsg.filter())
+async def delete_msg(callback: CallbackQuery, bot: Bot, callback_data: DelMsg) -> None:
+    message_id = callback_data.message_id
+    chat_id = callback_data.chat_id
+    await bot.delete_message(chat_id, message_id)
 
 
-@user.callback_query(F.data.startswith('delete_and_ban'))
-async def delete_msg(callback: CallbackQuery, bot: Bot) -> Any:
-    user_id = callback.data.split('|')[1]
-    message_id = callback.data.split('|')[2]
-    chat_id = callback.data.split('|')[3]
-    await bot.delete_message(int(chat_id), int(message_id))
-    await bot.ban_chat_member(int(chat_id), int(user_id))
+@user.callback_query(DelAndBan.filter())
+async def delete_msg(callback: CallbackQuery, bot: Bot, callback_data: DelAndBan) -> Any:
+    user_id = callback_data.user_id
+    message_id = callback_data.message_id
+    chat_id = callback_data.chat_id
+    await bot.delete_message(chat_id, message_id)
+    await bot.ban_chat_member(chat_id, user_id)
 
 
 @user.message(F.text)

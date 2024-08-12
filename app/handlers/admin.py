@@ -11,16 +11,14 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command, CommandObject
 from aiogram.exceptions import TelegramBadRequest
-
-
 import pymorphy3
 
 
 import app.keyboards as kb
-
+from config import ADMIN_ID
 
 admin = Router()
-admin.message.filter(F.chat.type == 'supergroup', F.from_user.id == 123)
+admin.message.filter(F.chat.type == 'supergroup', F.from_user.id == ADMIN_ID)
 
 
 def parse_time(time_string: str | None) -> datetime | None:
@@ -32,10 +30,12 @@ def parse_time(time_string: str | None) -> datetime | None:
         value, unit = int(match_.group(1)), match_.group(2)
 
         match unit:
-            case "m": time_delta = timedelta(minutes=value)
-            case "h": time_delta = timedelta(hours=value)
-            case "d": time_delta = timedelta(days=value)
-            case "w": time_delta = timedelta(weeks=value)
+            case "h":
+                time_delta = timedelta(hours=value)
+            case "d":
+                time_delta = timedelta(days=value)
+            case "w":
+                time_delta = timedelta(weeks=value)
             case _:
                 return None
     else:
